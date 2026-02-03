@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { randomBytes } from 'crypto';
+import { generateMagicLinkToken } from '@/lib/magic-link';
+import { sendMagicLinkEmail } from '@/lib/resend';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,25 +22,35 @@ export async function POST(request: Request) {
       });
     }
 
-    // Gerar token
-    const token = randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
+    // Gerar token JWT
+    const token = await generateMagicLinkToken(email);
+    
+    // Construir URL de verificação
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const verifyUrl = `${baseUrl}/api/auth/verify?token=${token}`;
 
-    // TODO: Salvar token no banco (criar model MagicLinkToken)
-    // Por enquanto, vamos apenas logar o link
-    const verifyUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/verify?token=${token}&email=${email}`;
+    // Enviar email
+    if (process.env.RESEND_API_KEY) {
+      await sendMagicLinkEmail(email, verifyUrl);
+      console.log('📧 Email enviado para:', email);
+    } else {
+      // Dev mode: log no console
+      console.log('🔗 Magic Link (dev mode):', verifyUrl);
+    }
 
-    console.log('🔗 Magic Link:', verifyUrl);
-
-    // TODO: Enviar email com nodemailer
-    // Por enquanto, apenas retornar sucesso
     return NextResponse.json({
       success: true,
-      message: 'Magic link enviado (verifique o console)',
-      debug: process.env.NODE_ENV === 'development' ? verifyUrl : undefined,
+      message: 'Link de acesso enviado para seu email',
+      // Em dev, retornar o link para facilitar testes
+      ...(process.env.NODE_ENV === 'development' && !process.env.RESEND_API_KEY
+        ? { debug: verifyUrl }
+        : {}),
     });
   } catch (error) {
     console.error('Error sending magic link:', error);
-    return NextResponse.json({ error: 'Erro ao enviar magic link' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Erro ao enviar link de acesso' },
+      { status: 500 }
+    );
   }
 }
