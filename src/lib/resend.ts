@@ -15,7 +15,7 @@ function getResend(): Resend {
 export async function sendMagicLinkEmail(email: string, magicLink: string) {
   const resend = getResend();
   const { data, error } = await resend.emails.send({
-    from: 'ProtocolOS <onboarding@resend.dev>',
+    from: 'onboarding@resend.dev',
     to: email,
     subject: '🔐 Seu link de acesso - ProtocolOS',
     html: `
@@ -55,8 +55,8 @@ export async function sendMagicLinkEmail(email: string, magicLink: string) {
   });
 
   if (error) {
-    console.error('Error sending email:', error);
-    throw new Error('Falha ao enviar email');
+    console.error('Error sending email:', JSON.stringify(error));
+    throw new Error(`Falha ao enviar email: ${error.message || JSON.stringify(error)}`);
   }
 
   return data;
