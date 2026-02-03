@@ -10,19 +10,21 @@ const SECRET = new TextEncoder().encode(
 );
 
 export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const baseUrl = `${url.protocol}//${url.host}`;
+  
   try {
-    const { searchParams } = new URL(request.url);
-    const token = searchParams.get('token');
+    const token = url.searchParams.get('token');
 
     if (!token) {
-      return NextResponse.redirect(new URL('/login?error=missing-token', request.url));
+      return NextResponse.redirect(`${baseUrl}/login?error=missing-token`);
     }
 
     // Verificar token
     const payload = await verifyMagicLinkToken(token);
 
     if (!payload) {
-      return NextResponse.redirect(new URL('/login?error=invalid-token', request.url));
+      return NextResponse.redirect(`${baseUrl}/login?error=invalid-token`);
     }
 
     // Buscar usuário
@@ -31,10 +33,10 @@ export async function GET(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.redirect(new URL('/login?error=user-not-found', request.url));
+      return NextResponse.redirect(`${baseUrl}/login?error=user-not-found`);
     }
 
-    // Criar session token para NextAuth
+    // Criar session token
     const sessionToken = await new SignJWT({
       sub: user.id,
       email: user.email,
@@ -45,21 +47,22 @@ export async function GET(request: Request) {
       .setExpirationTime('30d')
       .sign(SECRET);
 
-    // Redirect para app com cookie de sessão
-    const response = NextResponse.redirect(new URL('/app', request.url));
+    // Redirect para callback com cookie de sessão
+    const response = NextResponse.redirect(`${baseUrl}/auth/callback`);
     
-    // Set session cookie
+    // Set session cookie - importante: sem secure em dev
     response.cookies.set('auth-token', sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'lax',
       maxAge: 30 * 24 * 60 * 60, // 30 dias
       path: '/',
     });
 
+    console.log('✅ Auth token set, redirecting to /app');
     return response;
   } catch (error) {
     console.error('Error verifying magic link:', error);
-    return NextResponse.redirect(new URL('/login?error=verification-failed', request.url));
+    return NextResponse.redirect(`${baseUrl}/login?error=verification-failed`);
   }
 }

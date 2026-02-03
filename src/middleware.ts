@@ -18,11 +18,13 @@ async function verifyAuthToken(token: string): Promise<boolean> {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Skip API routes and static files
+  // Skip API routes, static files, home, and auth callback
   if (
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next') ||
-    pathname.includes('.')
+    pathname.startsWith('/auth') ||
+    pathname.includes('.') ||
+    pathname === '/'
   ) {
     return NextResponse.next();
   }
@@ -32,16 +34,20 @@ export async function middleware(request: NextRequest) {
     const authToken = request.cookies.get('auth-token')?.value;
     const isLoggedIn = authToken ? await verifyAuthToken(authToken) : false;
     
+    console.log('Middleware:', pathname, 'isLoggedIn:', isLoggedIn);
+    
     const isAuthRoute = pathname === '/login';
     const isAppRoute = pathname.startsWith('/app');
 
     // Not logged in trying to access app → redirect to login
     if (isAppRoute && !isLoggedIn) {
+      console.log('Redirecting to /login (not logged in)');
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
     // Logged in trying to access login → redirect to app
     if (isAuthRoute && isLoggedIn) {
+      console.log('Redirecting to /app (already logged in)');
       return NextResponse.redirect(new URL('/app', request.url));
     }
 
