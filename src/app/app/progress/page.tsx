@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -6,7 +6,7 @@ import { ConsistencyCalendar } from '@/components/progress/ConsistencyCalendar';
 import { WeightChart } from '@/components/progress/WeightChart';
 
 export default async function ProgressPage() {
-  const session = await auth();
+  const session = await getSession();
 
   if (!session?.user?.id) {
     redirect('/login');

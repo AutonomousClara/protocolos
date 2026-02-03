@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { CheckinForm } from '@/components/checkin/CheckinForm';
@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
 export default async function CheckinPage() {
-  const session = await auth();
+  const session = await getSession();
 
   if (!session?.user?.id) {
     redirect('/login');

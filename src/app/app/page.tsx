@@ -1,11 +1,11 @@
-import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await getSession();
 
   if (!session?.user?.id) {
     return null;

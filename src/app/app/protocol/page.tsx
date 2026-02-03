@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { WorkoutCard } from '@/components/protocol/WorkoutCard';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
 export default async function ProtocolPage() {
-  const session = await auth();
+  const session = await getSession();
 
   if (!session?.user?.id) {
     redirect('/login');
