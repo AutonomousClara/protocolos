@@ -1,0 +1,66 @@
+name: "🟣 Epic"
+description: "Grande iniciativa que abrange múltiplas sprints"
+labels: ["type:epic", "priority:p2"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Epic
+        Um epic representa uma grande iniciativa que será quebrada em múltiplas stories.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição
+      description: O que esse epic entrega? Por que é importante?
+      placeholder: |
+        **O que:** 
+        **Por que:**
+        **Para quem:**
+    validations:
+      required: true
+
+  - type: textarea
+    id: success-criteria
+    attributes:
+      label: Critérios de Sucesso
+      description: Como sabemos que o epic foi bem sucedido?
+      placeholder: |
+        - [ ] Critério 1
+        - [ ] Critério 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: stories
+    attributes:
+      label: Stories (será quebrado em)
+      description: Liste as stories que compõem esse epic
+      placeholder: |
+        - [ ] Story 1: ...
+        - [ ] Story 2: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Riscos
+      description: Quais os riscos desse epic?
+      placeholder: |
+        | Risco | Probabilidade | Impacto | Mitigação |
+        |-------|---------------|---------|-----------|
+    validations:
+      required: false
+
+  - type: dropdown
+    id: estimate
+    attributes:
+      label: Estimativa
+      description: Tamanho do epic
+      options:
+        - "L (2-3 dias)"
+        - "XL (1 semana)"
+        - "XXL (2+ semanas)"
+    validations:
+      required: true

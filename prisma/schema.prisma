@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  apiKey    String?  // Groq API key (encrypted)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  protocols Protocol[]
+  checkins  Checkin[]
+}
+
+model Protocol {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String   // "Protocolo Janeiro 2026"
+  originalPdf String   // URL do PDF no storage
+
+  // Dados extraídos
+  workouts    String   // JSON Array de workouts estruturados
+  meals       String   // JSON Array de refeições estruturadas
+  notes       String?  // Observações gerais
+
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  checkins    Checkin[]
+}
+
+model Checkin {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  protocolId   String
+  protocol     Protocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+
+  date         DateTime @default(now())
+
+  // Check-in data
+  trainedToday Boolean
+  followedDiet Boolean
+  workoutNotes String?
+  dietNotes    String?
+
+  // Opcional
+  weight       Float?
+  photos       String?  // JSON Array de URLs das fotos
+
+  // Mood/Energy (1-5)
+  energyLevel  Int?
+
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, protocolId, date])
+}

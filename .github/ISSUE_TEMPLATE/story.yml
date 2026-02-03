@@ -1,0 +1,87 @@
+name: "🔵 Story"
+description: "Funcionalidade que entrega valor pro usuário"
+labels: ["type:story", "priority:p2"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## User Story
+        Uma story entrega valor direto para o usuário final.
+
+  - type: input
+    id: user-story
+    attributes:
+      label: User Story
+      description: "Formato: Como [persona], quero [ação], para [benefício]"
+      placeholder: "Como usuário, quero fazer login com email, para acessar meus dados"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição
+      description: Contexto adicional sobre a story
+      placeholder: Detalhes, motivação, contexto...
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Critérios específicos e testáveis
+      placeholder: |
+        - [ ] AC1: Usuário consegue...
+        - [ ] AC2: Sistema valida...
+        - [ ] AC3: Mensagem de erro aparece quando...
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: Notas Técnicas
+      description: Detalhes de implementação, endpoints, etc
+      placeholder: |
+        - API: POST /api/auth/login
+        - Validações: email format, password min 8 chars
+    validations:
+      required: false
+
+  - type: textarea
+    id: tests
+    attributes:
+      label: Testes Necessários
+      description: O que precisa ser testado?
+      placeholder: |
+        **Unit:**
+        - [ ] Validação de email
+        
+        **E2E:**
+        - [ ] Happy path: login com sucesso
+        - [ ] Edge case: senha incorreta
+    validations:
+      required: false
+
+  - type: dropdown
+    id: estimate
+    attributes:
+      label: Estimativa
+      description: Tamanho da story
+      options:
+        - "XS (1 hora)"
+        - "S (2-4 horas)"
+        - "M (1 dia)"
+        - "L (2-3 dias)"
+    validations:
+      required: true
+
+  - type: input
+    id: parent-epic
+    attributes:
+      label: Epic (se houver)
+      description: "Link para o epic pai (ex: #42)"
+      placeholder: "#"
+    validations:
+      required: false

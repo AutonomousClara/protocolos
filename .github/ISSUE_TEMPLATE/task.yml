@@ -1,0 +1,79 @@
+name: "🟢 Task"
+description: "Tarefa técnica (não entrega valor direto ao usuário)"
+labels: ["type:task", "priority:p3"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Task
+        Tarefa técnica necessária mas que não entrega valor direto ao usuário.
+        Ex: refactor, configuração, documentação, CI/CD.
+
+  - type: input
+    id: title
+    attributes:
+      label: O que fazer
+      description: Descrição clara e acionável
+      placeholder: "Configurar Sentry para error tracking"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Detalhes
+      description: Por que essa task é necessária?
+      placeholder: |
+        **Contexto:**
+        **Por que agora:**
+    validations:
+      required: false
+
+  - type: textarea
+    id: done-criteria
+    attributes:
+      label: Definition of Done
+      description: Como sabemos que está pronto?
+      placeholder: |
+        - [ ] Sentry configurado no Vercel
+        - [ ] Erros aparecendo no dashboard
+        - [ ] Source maps funcionando
+    validations:
+      required: true
+
+  - type: dropdown
+    id: estimate
+    attributes:
+      label: Estimativa
+      description: Quanto tempo leva?
+      options:
+        - "XS (1 hora)"
+        - "S (2-4 horas)"
+        - "M (1 dia)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      description: Qual parte do sistema?
+      options:
+        - "infra"
+        - "ci-cd"
+        - "docs"
+        - "refactor"
+        - "security"
+        - "performance"
+        - "other"
+    validations:
+      required: true
+
+  - type: input
+    id: blocks
+    attributes:
+      label: Bloqueia (se houver)
+      description: "Quais issues dependem dessa task? (ex: #12, #15)"
+      placeholder: "#"
+    validations:
+      required: false

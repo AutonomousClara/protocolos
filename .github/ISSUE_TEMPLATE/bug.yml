@@ -1,0 +1,89 @@
+name: "🔴 Bug"
+description: "Reportar um defeito ou comportamento inesperado"
+labels: ["type:bug", "priority:p1"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        Descreva o problema de forma clara para facilitar a correção.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Descrição do Bug
+      description: O que está acontecendo de errado?
+      placeholder: "O botão de login não responde quando clicado"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para Reproduzir
+      description: Como reproduzir o bug?
+      placeholder: |
+        1. Acesse a página de login
+        2. Digite email e senha
+        3. Clique em "Entrar"
+        4. Observe que nada acontece
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento Esperado
+      description: O que deveria acontecer?
+      placeholder: "Deveria fazer login e redirecionar para o dashboard"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamento Atual
+      description: O que está acontecendo?
+      placeholder: "O botão fica em loading infinito"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severidade
+      description: Qual o impacto desse bug?
+      options:
+        - "P0-Critical: Sistema inutilizável"
+        - "P1-High: Feature importante quebrada"
+        - "P2-Medium: Funciona com workaround"
+        - "P3-Low: Cosmético ou edge case"
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Onde acontece?
+      placeholder: "Chrome 120, macOS, Produção"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Console errors, screenshots, etc
+      placeholder: "Cole aqui ou anexe imagens"
+    validations:
+      required: false
+
+  - type: input
+    id: workaround
+    attributes:
+      label: Workaround (se houver)
+      description: Existe alguma forma de contornar?
+      placeholder: "Recarregar a página funciona"
+    validations:
+      required: false
