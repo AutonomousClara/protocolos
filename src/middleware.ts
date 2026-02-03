@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { jwtVerify } from 'jose';
+
+const SECRET = new TextEncoder().encode(
+  process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret-change-me'
+);
+
+async function verifyAuthToken(token: string): Promise<boolean> {
+  try {
+    await jwtVerify(token, SECRET);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,12 +28,10 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    const token = await getToken({ 
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET
-    });
+    // Check our custom auth-token cookie
+    const authToken = request.cookies.get('auth-token')?.value;
+    const isLoggedIn = authToken ? await verifyAuthToken(authToken) : false;
     
-    const isLoggedIn = !!token;
     const isAuthRoute = pathname === '/login';
     const isAppRoute = pathname.startsWith('/app');
 
@@ -37,7 +48,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   } catch (error) {
     console.error('Middleware error:', error);
-    // On error, allow the request to proceed
     return NextResponse.next();
   }
 }
