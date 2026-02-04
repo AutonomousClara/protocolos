@@ -22,7 +22,6 @@ interface Workout {
 
 interface WorkoutCardProps {
   workout: Workout;
-  color?: string;
 }
 
 const workoutColors = [
