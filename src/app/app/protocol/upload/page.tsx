@@ -71,19 +71,16 @@ export default function UploadPage() {
                         {workout.exercises.length} exercícios
                       </p>
                       <div className="space-y-2">
-                        {workout.exercises.slice(0, 3).map((ex: any) => (
+                        {workout.exercises.map((ex: any) => (
                           <div key={ex.id} className="text-sm">
                             <span className="text-foreground">{ex.name}</span>
-                            <span className="text-foreground-muted ml-2">
-                              • {ex.sets}x{ex.reps}
-                            </span>
+                            {ex.sets && ex.reps && (
+                              <span className="text-foreground-muted ml-2">
+                                • {ex.sets}x{ex.reps}
+                              </span>
+                            )}
                           </div>
                         ))}
-                        {workout.exercises.length > 3 && (
-                          <p className="text-sm text-foreground-muted">
-                            + {workout.exercises.length - 3} exercícios
-                          </p>
-                        )}
                       </div>
                     </div>
                   ))}
@@ -112,19 +109,16 @@ export default function UploadPage() {
                         )}
                       </h4>
                       <div className="space-y-1">
-                        {meal.foods.slice(0, 3).map((food: any) => (
+                        {meal.foods.map((food: any) => (
                           <div key={food.id} className="text-sm">
                             <span className="text-foreground">{food.name}</span>
-                            <span className="text-foreground-muted ml-2">
-                              • {food.quantity}
-                            </span>
+                            {food.quantity && (
+                              <span className="text-foreground-muted ml-2">
+                                • {food.quantity}
+                              </span>
+                            )}
                           </div>
                         ))}
-                        {meal.foods.length > 3 && (
-                          <p className="text-sm text-foreground-muted">
-                            + {meal.foods.length - 3} alimentos
-                          </p>
-                        )}
                       </div>
                     </div>
                   ))}
