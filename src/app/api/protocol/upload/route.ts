@@ -1,20 +1,33 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { parseProtocolPdf } from '@/lib/pdf-parser';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 export const dynamic = 'force-dynamic';
 
+// ID fixo do usuário padrão (auth desabilitado)
+const DEFAULT_USER_ID = 'default-user';
+
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    // Garantir que usuário padrão existe
+    let user = await prisma.user.findUnique({
+      where: { id: DEFAULT_USER_ID },
+    });
 
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          id: DEFAULT_USER_ID,
+          email: 'user@protocolos.app',
+          name: 'Usuário',
+        },
+      });
     }
+
+    const userId = user.id;
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -41,16 +54,18 @@ export async function POST(request: Request) {
 
     await writeFile(filepath, buffer);
 
-    // Buscar API key do usuário
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { apiKey: true },
-    });
+    // Criar diretório de uploads se não existir
+    const uploadsDir = join(process.cwd(), 'public', 'uploads');
+    try {
+      await mkdir(uploadsDir, { recursive: true });
+    } catch (e) {
+      // Ignora se já existe
+    }
 
-    // Parsear PDF
+    // Parsear PDF (sem API key por enquanto - usar env var se disponível)
     let parsedData;
     try {
-      parsedData = await parseProtocolPdf(buffer, user?.apiKey || undefined);
+      parsedData = await parseProtocolPdf(buffer, process.env.GROQ_API_KEY || undefined);
     } catch (error: any) {
       if (error.message === 'PDF_IS_IMAGE') {
         return NextResponse.json(
@@ -70,7 +85,7 @@ export async function POST(request: Request) {
     // Desativar protocolos anteriores
     await prisma.protocol.updateMany({
       where: {
-        userId: session.user.id,
+        userId: userId,
         isActive: true,
       },
       data: {
@@ -81,7 +96,7 @@ export async function POST(request: Request) {
     // Criar novo protocolo
     const protocol = await prisma.protocol.create({
       data: {
-        userId: session.user.id,
+        userId: userId,
         name: file.name.replace('.pdf', ''),
         originalPdf: `/uploads/${filename}`,
         workouts: JSON.stringify(parsedData.workouts),

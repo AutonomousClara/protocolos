@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+// ID fixo do usuário padrão (auth desabilitado)
+const DEFAULT_USER_ID = 'default-user';
+
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
-    }
-
+    const userId = DEFAULT_USER_ID;
     const data = await request.json();
 
     // Normalizar data para hoje (00:00:00)
@@ -21,7 +18,7 @@ export async function POST(request: Request) {
     // Verificar se já existe check-in hoje
     const existingCheckin = await prisma.checkin.findFirst({
       where: {
-        userId: session.user.id,
+        userId: userId,
         protocolId: data.protocolId,
         date: {
           gte: today,
@@ -39,7 +36,7 @@ export async function POST(request: Request) {
 
     const checkin = await prisma.checkin.create({
       data: {
-        userId: session.user.id,
+        userId: userId,
         protocolId: data.protocolId,
         date: today,
         trainedToday: data.trainedToday,
@@ -63,12 +60,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
-    }
-
+    const userId = DEFAULT_USER_ID;
     const data = await request.json();
 
     if (!data.id) {
@@ -79,7 +71,7 @@ export async function PUT(request: Request) {
     const existingCheckin = await prisma.checkin.findFirst({
       where: {
         id: data.id,
-        userId: session.user.id,
+        userId: userId,
       },
     });
 
