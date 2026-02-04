@@ -16,6 +16,10 @@ async function verifyAuthToken(token: string): Promise<boolean> {
 }
 
 export async function middleware(request: NextRequest) {
+  // AUTH DESABILITADO PARA TESTES
+  return NextResponse.next();
+  
+  /* ORIGINAL - reativar depois
   const { pathname } = request.nextUrl;
   
   // Skip API routes, static files, home, and auth callback
@@ -30,24 +34,17 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // Check our custom auth-token cookie
     const authToken = request.cookies.get('auth-token')?.value;
     const isLoggedIn = authToken ? await verifyAuthToken(authToken) : false;
-    
-    console.log('Middleware:', pathname, 'isLoggedIn:', isLoggedIn);
     
     const isAuthRoute = pathname === '/login';
     const isAppRoute = pathname.startsWith('/app');
 
-    // Not logged in trying to access app → redirect to login
     if (isAppRoute && !isLoggedIn) {
-      console.log('Redirecting to /login (not logged in)');
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // Logged in trying to access login → redirect to app
     if (isAuthRoute && isLoggedIn) {
-      console.log('Redirecting to /app (already logged in)');
       return NextResponse.redirect(new URL('/app', request.url));
     }
 
@@ -56,6 +53,7 @@ export async function middleware(request: NextRequest) {
     console.error('Middleware error:', error);
     return NextResponse.next();
   }
+  */
 }
 
 export const config = {
