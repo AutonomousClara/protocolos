@@ -1,13 +1,13 @@
 import { auth } from '@/lib/auth';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-// import { redirect } from 'next/navigation'; // DISABLED
+import { redirect } from 'next/navigation';
 
 export async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
   if (!session?.user) {
-    return null; // TESTING MODE
+    redirect('/login');
   }
 
   return (
