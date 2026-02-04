@@ -16,40 +16,8 @@ async function verifyAuthToken(token: string): Promise<boolean> {
 }
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  
-  // Skip API routes, static files, home, and auth pages
-  if (
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/auth') ||
-    pathname.includes('.') ||
-    pathname === '/' ||
-    pathname === '/login'
-  ) {
-    return NextResponse.next();
-  }
-
-  try {
-    const authToken = request.cookies.get('auth-token')?.value;
-    const isLoggedIn = authToken ? await verifyAuthToken(authToken) : false;
-    
-    const isAppRoute = pathname.startsWith('/app');
-
-    // Proteger rotas /app - redirecionar para login se não autenticado
-    if (isAppRoute && !isLoggedIn) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-
-    return NextResponse.next();
-  } catch (error) {
-    console.error('Middleware error:', error);
-    // Em caso de erro, redireciona para login por segurança
-    if (pathname.startsWith('/app')) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-    return NextResponse.next();
-  }
+  // Auth desabilitado - app aberto para todos
+  return NextResponse.next();
 }
 
 export const config = {

@@ -16,25 +16,12 @@ export interface Session {
 }
 
 export async function getSession(): Promise<Session | null> {
-  try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth-token')?.value;
-
-    if (!token) {
-      return null;
-    }
-
-    const { payload } = await jwtVerify(token, SECRET);
-
-    return {
-      user: {
-        id: payload.sub as string,
-        email: payload.email as string,
-        name: (payload.name as string) || null,
-      },
-    };
-  } catch (error) {
-    console.error('Error getting session:', error);
-    return null;
-  }
+  // Auth desabilitado - retorna usuário padrão
+  return {
+    user: {
+      id: 'default-user',
+      email: 'user@protocolos.app',
+      name: 'Usuário',
+    },
+  };
 }
