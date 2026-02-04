@@ -10,23 +10,42 @@ const DEFAULT_USER_ID = 'default-user';
 export async function POST(request: Request) {
   try {
     // Garantir que usuário padrão existe
-    let user = await prisma.user.findUnique({
-      where: { id: DEFAULT_USER_ID },
-    });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          id: DEFAULT_USER_ID,
-          email: 'user@protocolos.app',
-          name: 'Usuário',
-        },
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: DEFAULT_USER_ID },
       });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            id: DEFAULT_USER_ID,
+            email: 'user@protocolos.app',
+            name: 'Usuário',
+          },
+        });
+      }
+    } catch (dbError: any) {
+      console.error('Database error:', dbError);
+      return NextResponse.json(
+        { error: 'Erro de banco de dados: ' + dbError.message },
+        { status: 500 }
+      );
     }
 
     const userId = user.id;
 
-    const formData = await request.formData();
+    let formData;
+    try {
+      formData = await request.formData();
+    } catch (formError: any) {
+      console.error('Form data error:', formError);
+      return NextResponse.json(
+        { error: 'Erro ao processar formulário: ' + formError.message },
+        { status: 400 }
+      );
+    }
+
     const file = formData.get('file') as File;
 
     if (!file) {
@@ -48,10 +67,13 @@ export async function POST(request: Request) {
 
     // Parsear PDF (usar API key do usuário ou env var)
     const apiKey = user.apiKey || process.env.GROQ_API_KEY;
+    console.log('Using API key:', apiKey ? 'yes (length: ' + apiKey.length + ')' : 'no');
+    
     let parsedData;
     try {
       parsedData = await parseProtocolPdf(buffer, apiKey || undefined);
     } catch (error: any) {
+      console.error('PDF parsing error:', error);
       if (error.message === 'PDF_IS_IMAGE') {
         return NextResponse.json(
           { error: 'PDF parece ser uma imagem. Por favor, use um PDF com texto.' },
@@ -60,11 +82,14 @@ export async function POST(request: Request) {
       }
       if (error.message === 'API_KEY_REQUIRED') {
         return NextResponse.json(
-          { error: 'API key do Groq necessária. Configure GROQ_API_KEY nas variáveis de ambiente.' },
+          { error: 'API key do Groq necessária. Adicione nas configurações ou defina GROQ_API_KEY.' },
           { status: 400 }
         );
       }
-      throw error;
+      return NextResponse.json(
+        { error: 'Erro ao processar PDF: ' + error.message },
+        { status: 500 }
+      );
     }
 
     // Desativar protocolos anteriores
