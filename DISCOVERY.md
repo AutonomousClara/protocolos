@@ -2,9 +2,53 @@
 
 > App de acompanhamento de treino e dieta com extração automática de PDF e análise de execução por IA.
 
-**Data:** 2026-02-02
-**Status:** Discovery completo
-**Tipo:** `/produto-complexo` (1-2 semanas)
+**Data Discovery:** 2026-02-02  
+**Última Atualização:** 2026-02-04  
+**Tipo:** `/produto-complexo` (1-2 semanas por fase)
+
+---
+
+## 📊 STATUS ATUAL (2026-02-04)
+
+### Progresso Geral
+- **Deployed:** ✅ https://protocolos-two.vercel.app
+- **Fase Atual:** Fase 1 (MVP Aluno) — 90% completo
+- **Sprint Atual:** Sprint 4 (Polish)
+- **Próximo Marco:** v1.0 MVP Aluno (ETA: 1-2 semanas)
+
+### Roadmap de Fases
+
+| Fase | Status | Timeline | Milestones |
+|------|--------|----------|------------|
+| **Fase 1: MVP Aluno** | 🟡 90% | Sem 1-2 | Sprint 1-5, v1.0 |
+| **Fase 2: Treinador View** | ⚪ 0% | Sem 3-4 | v2.0 |
+| **Fase 3: MediaPipe** | ⚪ 0% | Sem 5-6 | v3.0 |
+| **Fase 4: Mobile** | ⚪ 0% | Futuro | v4.0 |
+
+### Sprints Concluídos
+- ✅ Sprint 1: Foundation (Auth + Infra)
+- ✅ Sprint 2: Core (Upload + Parsing + View)
+- ✅ Sprint 3: Engagement (Check-in + Progress)
+- 🟡 Sprint 4: Polish (Responsive + SEO + UX) — in progress
+
+### Issues Stats
+- **Total:** 31 issues
+- **Fechadas:** 23 (74%)
+- **Abertas:** 8
+  - P1 (High): 4 issues
+  - P2 (Medium): 3 issues
+  - P3 (Low): 1 issue
+
+### Próximos Passos
+1. Terminar Sprint 4 (polish) — ~2-3 dias
+2. Sprint 5: MVP Completion (CRUD + testes) — ~1 semana
+3. Beta testing com usuários reais — ~1-2 semanas
+4. Decidir: Fase 2 ou Fase 3 baseado em feedback
+
+### Tracking
+- **Kanban:** https://github.com/users/AutonomousClara/projects/1
+- **Repo:** https://github.com/AutonomousClara/protocolos
+- **Milestones:** v1.0, v2.0, v3.0, v4.0
 
 ---
 
