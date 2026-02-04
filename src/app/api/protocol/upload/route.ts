@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { parseProtocolPdf } from '@/lib/pdf-parser';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { v4 as uuidv4 } from 'uuid';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,24 +42,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Arquivo muito grande (máx 10MB)' }, { status: 400 });
     }
 
-    // Salvar arquivo
+    // Ler arquivo em memória
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const filename = `${uuidv4()}-${file.name}`;
-    const filepath = join(process.cwd(), 'public', 'uploads', filename);
-
-    await writeFile(filepath, buffer);
-
-    // Criar diretório de uploads se não existir
-    const uploadsDir = join(process.cwd(), 'public', 'uploads');
-    try {
-      await mkdir(uploadsDir, { recursive: true });
-    } catch (e) {
-      // Ignora se já existe
-    }
-
-    // Parsear PDF (sem API key por enquanto - usar env var se disponível)
+    // Parsear PDF (usar env var GROQ_API_KEY se disponível)
     let parsedData;
     try {
       parsedData = await parseProtocolPdf(buffer, process.env.GROQ_API_KEY || undefined);
@@ -75,7 +59,7 @@ export async function POST(request: Request) {
       }
       if (error.message === 'API_KEY_REQUIRED') {
         return NextResponse.json(
-          { error: 'API key do Groq necessária. Configure nas configurações.' },
+          { error: 'API key do Groq necessária. Configure GROQ_API_KEY nas variáveis de ambiente.' },
           { status: 400 }
         );
       }
@@ -93,12 +77,12 @@ export async function POST(request: Request) {
       },
     });
 
-    // Criar novo protocolo
+    // Criar novo protocolo (sem salvar PDF - Vercel é read-only)
     const protocol = await prisma.protocol.create({
       data: {
         userId: userId,
         name: file.name.replace('.pdf', ''),
-        originalPdf: `/uploads/${filename}`,
+        originalPdf: null, // Não salvamos o PDF no Vercel
         workouts: JSON.stringify(parsedData.workouts),
         meals: JSON.stringify(parsedData.mealPlan.meals),
         notes: parsedData.notes,
