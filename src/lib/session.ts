@@ -16,17 +16,6 @@ export interface Session {
 }
 
 export async function getSession(): Promise<Session | null> {
-  // MODO TESTE - retorna usuário fake
-  // TODO: remover depois de testar
-  return {
-    user: {
-      id: 'test-user-123',
-      email: 'test@test.com',
-      name: 'Test User',
-    },
-  };
-  
-  /* ORIGINAL - reativar depois
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth-token')?.value;
@@ -48,5 +37,4 @@ export async function getSession(): Promise<Session | null> {
     console.error('Error getting session:', error);
     return null;
   }
-  */
 }
