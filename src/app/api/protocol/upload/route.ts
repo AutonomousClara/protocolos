@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       data: {
         userId: userId,
         name: file.name.replace('.pdf', ''),
-        originalPdf: null, // Não salvamos o PDF no Vercel
+        originalPdf: '', // Não salvamos o PDF no Vercel (read-only)
         workouts: JSON.stringify(parsedData.workouts),
         meals: JSON.stringify(parsedData.mealPlan.meals),
         notes: parsedData.notes,
