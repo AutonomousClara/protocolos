@@ -27,24 +27,41 @@
 
 ## 🔍 Como Monitorar
 
-### Ver Log em Tempo Real
+### Updates Automáticos (Discord)
+✅ **Configurado!** Updates a cada 30 minutos via DM no Discord.
+
+**Cron Job ID:** `ccd6d875-050d-47ef-b1d8-be60c4233aed`  
+**Próximo update:** A cada 30 minutos  
+**Script:** `./scripts/ralph_monitor.py`
+
+### Monitorar Manualmente
+
+**Ver log em tempo real:**
 ```bash
-process action:log sessionId:faint-gulf limit:100
+cd ./projects/protocolos
+tail -f ralph-output.log
 ```
 
-### Ver Status
+**Ver processo:**
 ```bash
-process action:poll sessionId:faint-gulf
+ps aux | grep 12625
 ```
 
-### Ver Todas Sessões
+**Ver commits recentes:**
 ```bash
-process action:list
+cd ./projects/protocolos
+git log --oneline -10
 ```
 
-### Matar Se Necessário
+**Ver issues fechadas:**
 ```bash
-process action:kill sessionId:faint-gulf
+cd ./projects/protocolos
+gh issue list --state closed --limit 10
+```
+
+**Rodar monitor manualmente:**
+```bash
+python3 ./scripts/ralph_monitor.py
 ```
 
 ---
