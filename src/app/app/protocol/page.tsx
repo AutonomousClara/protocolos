@@ -7,6 +7,12 @@ import { ProtocolTabs } from '@/components/protocol/ProtocolTabs';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Protocolo',
+  description: 'Visualize e gerencie seu protocolo de treino e dieta',
+};
 
 export default async function ProtocolPage() {
   const session = await getSession();

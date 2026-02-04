@@ -14,8 +14,32 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "ProtocolOS - Acompanhamento de Treino e Dieta",
-  description: "App de acompanhamento de treino e dieta com extração automática de PDF",
+  title: {
+    default: "ProtocolOS - Acompanhamento de Treino e Dieta",
+    template: "%s | ProtocolOS",
+  },
+  description: "Acompanhe seu treino e dieta. Upload de PDF, check-in diário, gráficos de evolução e muito mais.",
+  keywords: ["treino", "dieta", "fitness", "musculação", "nutrição", "acompanhamento", "protocolo"],
+  authors: [{ name: "ProtocolOS" }],
+  creator: "ProtocolOS",
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "https://protocolos-two.vercel.app"),
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: "/",
+    title: "ProtocolOS - Seu Protocolo de Treino e Dieta",
+    description: "Acompanhe seu protocolo de treino e dieta com facilidade. Upload de PDF, check-in diário e evolução.",
+    siteName: "ProtocolOS",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ProtocolOS - Acompanhamento de Treino e Dieta",
+    description: "Acompanhe seu protocolo de treino e dieta com facilidade.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

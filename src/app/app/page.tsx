@@ -3,6 +3,12 @@ import { prisma } from '@/lib/prisma';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+  description: 'Acompanhe seu progresso e mantenha sua consistência',
+};
 
 export default async function DashboardPage() {
   const session = await getSession();
