@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ConsistencyCalendar } from '@/components/progress/ConsistencyCalendar';
 import { WeightChart } from '@/components/progress/WeightChart';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProgressPage() {
   const session = await getSession();
 

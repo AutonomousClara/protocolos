@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Dashboard',
   description: 'Acompanhe seu progresso e mantenha sua consistência',

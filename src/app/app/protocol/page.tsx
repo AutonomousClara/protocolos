@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Protocolo',
   description: 'Visualize e gerencie seu protocolo de treino e dieta',

@@ -6,6 +6,8 @@ import { Card, CardContent } from '@/components/ui/Card';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CheckinPage() {
   const session = await getSession();
 
