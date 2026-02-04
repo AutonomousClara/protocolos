@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 
 interface Exercise {
   id: string;
@@ -22,6 +25,8 @@ interface Workout {
 
 interface WorkoutCardProps {
   workout: Workout;
+  protocolId?: string;
+  onUpdate?: () => void;
 }
 
 const workoutColors = [
@@ -33,22 +38,51 @@ const workoutColors = [
   { bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400' },
 ];
 
-export function WorkoutCard({ workout, color }: WorkoutCardProps) {
+export function WorkoutCard({ workout, color, protocolId, onUpdate }: WorkoutCardProps) {
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Use a hash of workout.id to consistently pick the same color
   const colorIndex = workout.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % workoutColors.length;
   const colorScheme = workoutColors[colorIndex];
 
+  const handleDelete = async () => {
+    if (!protocolId) return;
+
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/protocol/workout/${workout.id}?protocolId=${protocolId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        throw new Error('Erro ao deletar treino');
+      }
+
+      setIsDeleteModalOpen(false);
+      router.refresh();
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+      alert('Erro ao deletar treino');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <Card className={`${colorScheme.bg} border ${colorScheme.border}`}>
-      <CardHeader>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full text-left flex items-center justify-between group"
-        >
-          <div className="flex-1">
-            <CardTitle className={colorScheme.text}>{workout.name}</CardTitle>
+    <>
+      <Card className={`${colorScheme.bg} border ${colorScheme.border}`}>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4">
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex-1 text-left flex items-center justify-between group min-w-0"
+            >
+              <div className="flex-1 min-w-0">
+                <CardTitle className={`${colorScheme.text} break-words`}>{workout.name}</CardTitle>
             {workout.dayOfWeek && workout.dayOfWeek.length > 0 && (
               <p className="text-sm text-foreground-muted mt-1">
                 {workout.dayOfWeek.map(day => {
@@ -70,7 +104,7 @@ export function WorkoutCard({ workout, color }: WorkoutCardProps) {
             </p>
           </div>
           <svg
-            className={`w-5 h-5 ${colorScheme.text} transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`w-5 h-5 ${colorScheme.text} transition-transform ${isExpanded ? 'rotate-180' : ''} flex-shrink-0`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -78,6 +112,23 @@ export function WorkoutCard({ workout, color }: WorkoutCardProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
+
+        {protocolId && (
+          <div className="flex gap-2 flex-shrink-0">
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="h-9 w-9 p-0 flex items-center justify-center"
+              aria-label="Deletar treino"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </Button>
+          </div>
+        )}
+      </div>
       </CardHeader>
 
       {isExpanded && (
@@ -174,5 +225,41 @@ export function WorkoutCard({ workout, color }: WorkoutCardProps) {
         </CardContent>
       )}
     </Card>
+
+    {/* Delete Modal */}
+    <Modal
+      isOpen={isDeleteModalOpen}
+      onClose={() => setIsDeleteModalOpen(false)}
+      title="Confirmar Exclusão"
+      size="sm"
+    >
+      <div className="space-y-4">
+        <p className="text-foreground">
+          Tem certeza que deseja deletar o treino <strong>{workout.name}</strong>?
+        </p>
+        <p className="text-sm text-foreground-muted">
+          Esta ação não pode ser desfeita.
+        </p>
+        <div className="flex gap-3 pt-4">
+          <Button
+            variant="ghost"
+            className="flex-1"
+            onClick={() => setIsDeleteModalOpen(false)}
+            disabled={isDeleting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="danger"
+            className="flex-1"
+            onClick={handleDelete}
+            isLoading={isDeleting}
+          >
+            Deletar
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  </>
   );
 }

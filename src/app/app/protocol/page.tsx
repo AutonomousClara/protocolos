@@ -153,7 +153,7 @@ export default async function ProtocolPage() {
                     </div>
                     <div className="grid grid-cols-1 gap-4 pl-3">
                       {dayWorkouts.map((workout: any) => (
-                        <WorkoutCard key={workout.id} workout={workout} />
+                        <WorkoutCard key={workout.id} workout={workout} protocolId={protocol.id} />
                       ))}
                     </div>
                   </div>
@@ -209,7 +209,7 @@ export default async function ProtocolPage() {
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pl-3">
                       {typeMeals.map((meal: any) => (
-                        <MealCard key={meal.id} meal={meal} />
+                        <MealCard key={meal.id} meal={meal} protocolId={protocol.id} />
                       ))}
                     </div>
                   </div>
