@@ -1,41 +1,29 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
-// Simples criptografia (em produção, usar algo mais robusto)
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default-key-32-chars-long!!!';
-const ALGORITHM = 'aes-256-cbc';
-
-function encrypt(text: string): string {
-  const iv = randomBytes(16);
-  const cipher = createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY.slice(0, 32)), iv);
-  let encrypted = cipher.update(text);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return iv.toString('hex') + ':' + encrypted.toString('hex');
-}
-
-function decrypt(text: string): string {
-  const parts = text.split(':');
-  const iv = Buffer.from(parts.shift()!, 'hex');
-  const encryptedText = Buffer.from(parts.join(':'), 'hex');
-  const decipher = createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY.slice(0, 32)), iv);
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted.toString();
-}
+// ID fixo do usuário padrão (auth desabilitado)
+const DEFAULT_USER_ID = 'default-user';
 
 export async function PUT(request: Request) {
   try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
-    }
-
     const data = await request.json();
+
+    // Garantir que usuário padrão existe
+    let user = await prisma.user.findUnique({
+      where: { id: DEFAULT_USER_ID },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          id: DEFAULT_USER_ID,
+          email: 'user@protocolos.app',
+          name: 'Usuário',
+        },
+      });
+    }
 
     const updateData: any = {};
 
@@ -44,17 +32,12 @@ export async function PUT(request: Request) {
     }
 
     if (data.apiKey !== undefined) {
-      // Se apiKey vazia, remover
-      if (data.apiKey === '') {
-        updateData.apiKey = null;
-      } else {
-        // Criptografar API key
-        updateData.apiKey = encrypt(data.apiKey);
-      }
+      // Salvar API key (sem criptografia por simplicidade)
+      updateData.apiKey = data.apiKey === '' ? null : data.apiKey;
     }
 
-    const user = await prisma.user.update({
-      where: { id: session.user.id },
+    user = await prisma.user.update({
+      where: { id: DEFAULT_USER_ID },
       data: updateData,
     });
 
@@ -76,20 +59,21 @@ export async function PUT(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    // Garantir que usuário padrão existe
+    let user = await prisma.user.findUnique({
+      where: { id: DEFAULT_USER_ID },
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
+      user = await prisma.user.create({
+        data: {
+          id: DEFAULT_USER_ID,
+          email: 'user@protocolos.app',
+          name: 'Usuário',
+        },
+      });
     }
 
     return NextResponse.json({

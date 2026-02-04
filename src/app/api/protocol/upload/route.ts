@@ -46,10 +46,11 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Parsear PDF (usar env var GROQ_API_KEY se disponível)
+    // Parsear PDF (usar API key do usuário ou env var)
+    const apiKey = user.apiKey || process.env.GROQ_API_KEY;
     let parsedData;
     try {
-      parsedData = await parseProtocolPdf(buffer, process.env.GROQ_API_KEY || undefined);
+      parsedData = await parseProtocolPdf(buffer, apiKey || undefined);
     } catch (error: any) {
       if (error.message === 'PDF_IS_IMAGE') {
         return NextResponse.json(
