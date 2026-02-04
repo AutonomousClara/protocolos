@@ -10,7 +10,7 @@ export default async function CheckinPage() {
   const session = await getSession();
 
   if (!session?.user?.id) {
-    // redirect('/login'); // DISABLED FOR TESTING
+    return null; // TESTING MODE
   }
 
   const protocol = await prisma.protocol.findFirst({
