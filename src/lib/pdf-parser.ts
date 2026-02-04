@@ -102,7 +102,9 @@ export async function parseProtocolPdf(
   // 1. Extrair texto do PDF usando unpdf (funciona em serverless)
   let rawText = '';
   try {
-    const { text } = await extractText(buffer, { mergePages: true });
+    // unpdf precisa de Uint8Array, não Buffer
+    const uint8Array = new Uint8Array(buffer);
+    const { text } = await extractText(uint8Array, { mergePages: true });
     rawText = text;
   } catch (err: any) {
     console.error('PDF parse error:', err);
