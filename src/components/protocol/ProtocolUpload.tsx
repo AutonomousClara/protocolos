@@ -68,14 +68,30 @@ export function ProtocolUpload({ onUploadComplete }: ProtocolUploadProps) {
         body: formData,
       });
 
+      // Pegar texto da resposta primeiro
+      const text = await res.text();
+      
+      // Verificar se há resposta
+      if (!text) {
+        throw new Error('Servidor retornou resposta vazia. Tente novamente.');
+      }
+
+      // Tentar parsear JSON
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error('Response text:', text);
+        throw new Error('Resposta inválida do servidor: ' + text.slice(0, 100));
+      }
+
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || 'Erro ao fazer upload');
       }
 
-      const data = await res.json();
       onUploadComplete(data);
     } catch (err: any) {
+      console.error('Upload error:', err);
       setError(err.message || 'Erro ao processar PDF');
     } finally {
       setIsUploading(false);
