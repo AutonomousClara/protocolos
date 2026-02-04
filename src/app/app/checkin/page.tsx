@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
-import { redirect } from 'next/navigation';
+// import { redirect } from 'next/navigation'; // DISABLED
 import { CheckinForm } from '@/components/checkin/CheckinForm';
 import { Card, CardContent } from '@/components/ui/Card';
 import Link from 'next/link';

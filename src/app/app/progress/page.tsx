@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
-import { redirect } from 'next/navigation';
+// import { redirect } from 'next/navigation'; // DISABLED
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ConsistencyCalendar } from '@/components/progress/ConsistencyCalendar';
 import { WeightChart } from '@/components/progress/WeightChart';
