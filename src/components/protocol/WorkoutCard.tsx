@@ -38,7 +38,7 @@ const workoutColors = [
   { bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400' },
 ];
 
-export function WorkoutCard({ workout, color, protocolId, onUpdate }: WorkoutCardProps) {
+export function WorkoutCard({ workout, protocolId, onUpdate }: WorkoutCardProps) {
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
