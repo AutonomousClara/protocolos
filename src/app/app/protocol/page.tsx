@@ -50,6 +50,62 @@ export default async function ProtocolPage() {
   const workouts = JSON.parse(protocol.workouts);
   const meals = JSON.parse(protocol.meals);
 
+  // Organizar treinos por dia da semana
+  const workoutsByDay = workouts.reduce((acc: any, workout: any) => {
+    const dayKey = workout.dayOfWeek?.[0] || 'Geral';
+    if (!acc[dayKey]) {
+      acc[dayKey] = [];
+    }
+    acc[dayKey].push(workout);
+    return acc;
+  }, {});
+
+  // Mapeamento de dias para ordenação
+  const dayOrder: Record<string, number> = {
+    'monday': 1,
+    'tuesday': 2,
+    'wednesday': 3,
+    'thursday': 4,
+    'friday': 5,
+    'saturday': 6,
+    'sunday': 7,
+    'Geral': 8,
+  };
+
+  const sortedDays = Object.keys(workoutsByDay).sort((a, b) => {
+    return (dayOrder[a] || 99) - (dayOrder[b] || 99);
+  });
+
+  // Organizar refeições por tipo
+  const mealsByType: Record<string, any[]> = {
+    'Café da Manhã': [],
+    'Lanche da Manhã': [],
+    'Almoço': [],
+    'Lanche da Tarde': [],
+    'Jantar': [],
+    'Ceia': [],
+    'Outros': [],
+  };
+
+  meals.forEach((meal: any) => {
+    const mealName = meal.name.toLowerCase();
+    if (mealName.includes('café') || mealName.includes('breakfast')) {
+      mealsByType['Café da Manhã'].push(meal);
+    } else if (mealName.includes('almoço') || mealName.includes('lunch')) {
+      mealsByType['Almoço'].push(meal);
+    } else if (mealName.includes('jantar') || mealName.includes('dinner') || mealName.includes('janta')) {
+      mealsByType['Jantar'].push(meal);
+    } else if (mealName.includes('lanche da manhã') || mealName.includes('snack 1')) {
+      mealsByType['Lanche da Manhã'].push(meal);
+    } else if (mealName.includes('lanche da tarde') || mealName.includes('snack 2')) {
+      mealsByType['Lanche da Tarde'].push(meal);
+    } else if (mealName.includes('ceia') || mealName.includes('supper')) {
+      mealsByType['Ceia'].push(meal);
+    } else {
+      mealsByType['Outros'].push(meal);
+    }
+  });
+
   const tabs = [
     {
       id: 'workouts',
@@ -61,7 +117,7 @@ export default async function ProtocolPage() {
         </svg>
       ),
       content: (
-        <div>
+        <div className="space-y-6">
           {workouts.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
@@ -69,11 +125,41 @@ export default async function ProtocolPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {workouts.map((workout: any) => (
-                <WorkoutCard key={workout.id} workout={workout} />
-              ))}
-            </div>
+            <>
+              {sortedDays.map((dayKey) => {
+                const dayWorkouts = workoutsByDay[dayKey];
+                const dayNames: Record<string, string> = {
+                  'monday': 'Segunda-feira',
+                  'tuesday': 'Terça-feira',
+                  'wednesday': 'Quarta-feira',
+                  'thursday': 'Quinta-feira',
+                  'friday': 'Sexta-feira',
+                  'saturday': 'Sábado',
+                  'sunday': 'Domingo',
+                  'Geral': 'Treinos Gerais',
+                };
+                const dayLabel = dayNames[dayKey] || dayKey;
+
+                return (
+                  <div key={dayKey} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
+                      <h2 className="text-xl font-bold text-foreground">
+                        {dayLabel}
+                      </h2>
+                      <span className="px-2 py-0.5 bg-surface text-foreground-muted text-xs font-medium rounded-full border border-border">
+                        {dayWorkouts.length} treino{dayWorkouts.length > 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4 pl-3">
+                      {dayWorkouts.map((workout: any) => (
+                        <WorkoutCard key={workout.id} workout={workout} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
           )}
         </div>
       ),
@@ -88,7 +174,7 @@ export default async function ProtocolPage() {
         </svg>
       ),
       content: (
-        <div>
+        <div className="space-y-6">
           {meals.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
@@ -96,11 +182,40 @@ export default async function ProtocolPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {meals.map((meal: any) => (
-                <MealCard key={meal.id} meal={meal} />
-              ))}
-            </div>
+            <>
+              {Object.entries(mealsByType).map(([mealType, typeMeals]) => {
+                if (typeMeals.length === 0) return null;
+
+                const mealIcons: Record<string, string> = {
+                  'Café da Manhã': '☕',
+                  'Lanche da Manhã': '🍎',
+                  'Almoço': '🍽️',
+                  'Lanche da Tarde': '🥤',
+                  'Jantar': '🍴',
+                  'Ceia': '🌙',
+                  'Outros': '🍱',
+                };
+
+                return (
+                  <div key={mealType} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{mealIcons[mealType]}</span>
+                      <h2 className="text-xl font-bold text-foreground">
+                        {mealType}
+                      </h2>
+                      <span className="px-2 py-0.5 bg-surface text-foreground-muted text-xs font-medium rounded-full border border-border">
+                        {typeMeals.length} refeição{typeMeals.length > 1 ? 'ões' : ''}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pl-3">
+                      {typeMeals.map((meal: any) => (
+                        <MealCard key={meal.id} meal={meal} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
           )}
         </div>
       ),
@@ -157,6 +272,17 @@ export default async function ProtocolPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
+      {/* Breadcrumbs */}
+      <nav className="flex items-center gap-2 text-sm text-foreground-muted">
+        <Link href="/app" className="hover:text-foreground transition-colors">
+          Dashboard
+        </Link>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        <span className="text-foreground font-medium">Protocolo</span>
+      </nav>
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4">
         <div className="min-w-0">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1 md:mb-2 break-words">
