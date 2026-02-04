@@ -82,7 +82,8 @@ export function WorkoutCard({ workout, color }: WorkoutCardProps) {
 
       {isExpanded && (
         <CardContent>
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
@@ -131,6 +132,44 @@ export function WorkoutCard({ workout, color }: WorkoutCardProps) {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {workout.exercises.map((exercise, idx) => (
+              <div
+                key={exercise.id}
+                className="border border-border/50 rounded-lg p-3 bg-surface/30"
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-8 h-8 rounded-full ${colorScheme.bg} ${colorScheme.border} border flex items-center justify-center flex-shrink-0`}>
+                    <span className={`${colorScheme.text} font-semibold text-sm`}>{idx + 1}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground">{exercise.name}</p>
+                    {exercise.weight && (
+                      <p className="text-xs text-foreground-muted mt-0.5">Carga: {exercise.weight}</p>
+                    )}
+                    <div className="flex gap-3 mt-2 text-sm">
+                      <span className="text-foreground">
+                        <span className="text-foreground-muted text-xs">Séries:</span> {exercise.sets}
+                      </span>
+                      <span className="text-foreground">
+                        <span className="text-foreground-muted text-xs">Reps:</span> {exercise.reps}
+                      </span>
+                      <span className="text-foreground">
+                        <span className="text-foreground-muted text-xs">Rest:</span> {exercise.rest}
+                      </span>
+                    </div>
+                    {exercise.notes && (
+                      <p className="text-sm text-foreground-muted mt-2 border-t border-border/50 pt-2">
+                        {exercise.notes}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       )}

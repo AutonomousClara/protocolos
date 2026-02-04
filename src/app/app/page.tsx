@@ -79,13 +79,13 @@ export default async function DashboardPage() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Protocolo Ativo</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold text-foreground mb-1">
+                <p className="text-xl md:text-2xl font-bold text-foreground mb-1 break-words">
                   {activeProtocol.name}
                 </p>
                 <Link href="/app/protocol">
@@ -102,7 +102,7 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-bold gradient-purple-pink bg-clip-text text-transparent">
+                  <p className="text-3xl md:text-4xl font-bold gradient-purple-pink bg-clip-text text-transparent">
                     {streak}
                   </p>
                   <p className="text-foreground-muted">dias</p>
@@ -110,13 +110,13 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="sm:col-span-2 lg:col-span-1">
               <CardHeader>
                 <CardTitle className="text-base">Check-ins Total</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-bold text-success">
+                  <p className="text-3xl md:text-4xl font-bold text-success">
                     {recentCheckins.length}
                   </p>
                   <p className="text-foreground-muted">realizados</p>
@@ -131,7 +131,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Link href="/app/checkin">
-                <Button size="lg" className="w-full md:w-auto">
+                <Button size="lg" className="w-full sm:w-auto">
                   Fazer Check-in de Hoje
                 </Button>
               </Link>

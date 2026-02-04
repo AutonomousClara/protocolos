@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 const navItems = [
   {
@@ -41,7 +42,7 @@ const navItems = [
     ),
   },
   {
-    name: 'Configura\u00e7\u00f5es',
+    name: 'Configurações',
     href: '/app/settings',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,37 +55,72 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <aside className="w-64 bg-surface border-r border-border min-h-screen p-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold gradient-purple-pink bg-clip-text text-transparent">
-          ProtocolOS
-        </h1>
-      </div>
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-surface border border-border shadow-lg"
+        aria-label="Toggle menu"
+      >
+        <svg className="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {isMobileMenuOpen ? (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
 
-      <nav className="space-y-2">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/app' && pathname?.startsWith(item.href));
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`
-                flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
-                ${isActive
-                  ? 'bg-primary text-white'
-                  : 'text-foreground-muted hover:bg-surface hover:text-foreground'
-                }
-              `}
-            >
-              {item.icon}
-              <span className="font-medium">{item.name}</span>
-            </Link>
-          );
-        })}
-      </nav>
-    </aside>
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed lg:static inset-y-0 left-0 z-40
+          w-64 bg-surface border-r border-border min-h-screen p-6
+          transform transition-transform duration-200 ease-in-out
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold gradient-purple-pink bg-clip-text text-transparent">
+            ProtocolOS
+          </h1>
+        </div>
+
+        <nav className="space-y-2">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || (item.href !== '/app' && pathname?.startsWith(item.href));
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`
+                  flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
+                  ${isActive
+                    ? 'bg-primary text-white'
+                    : 'text-foreground-muted hover:bg-surface hover:text-foreground'
+                  }
+                `}
+              >
+                {item.icon}
+                <span className="font-medium">{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+    </>
   );
 }

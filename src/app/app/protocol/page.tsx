@@ -156,21 +156,21 @@ export default async function ProtocolPage() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+    <div className="max-w-6xl mx-auto space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1 md:mb-2 break-words">
             {protocol.name}
           </h1>
-          <p className="text-foreground-muted">
+          <p className="text-sm md:text-base text-foreground-muted">
             {protocol.startDate
               ? `Iniciado em ${new Date(protocol.startDate).toLocaleDateString('pt-BR')}`
               : 'Protocolo ativo'
             }
           </p>
         </div>
-        <Link href="/app/protocol/upload">
-          <Button variant="secondary">Novo Upload</Button>
+        <Link href="/app/protocol/upload" className="w-full sm:w-auto">
+          <Button variant="secondary" className="w-full sm:w-auto">Novo Upload</Button>
         </Link>
       </div>
 

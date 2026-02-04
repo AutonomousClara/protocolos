@@ -80,7 +80,7 @@ export function MealCard({ meal }: MealCardProps) {
           </svg>
         </button>
         {isExpanded && hasNutrients && (
-          <div className="flex gap-4 mt-3 pt-3 border-t border-border text-sm">
+          <div className="grid grid-cols-2 sm:flex sm:gap-4 gap-3 mt-3 pt-3 border-t border-border text-sm">
             <div className="flex items-center gap-2">
               <span className="text-foreground-muted">Calorias:</span>
               <span className="font-medium text-foreground">{totalNutrients.calories}</span>
