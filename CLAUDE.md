@@ -1,452 +1,426 @@
-# ProtocolOS - Spec Técnica
+# ProtocolOS - Sprint 4+5 Híbrido
 
-> App de acompanhamento de treino e dieta com extração automática de PDF.
+> **Objetivo:** Completar v1.0 MVP Aluno implementando core features + polish essencial.
 
-**Leia primeiro:** `DISCOVERY.md`
-
----
-
-## Visão Geral
-
-ProtocolOS é um app web onde o usuário faz upload do PDF de treino/dieta que recebeu do personal trainer. O app usa IA para extrair e estruturar o conteúdo automaticamente. O usuário faz check-in diário e acompanha sua evolução.
+**Prioridade:** Opção 3 (Híbrido) — 7 issues críticas  
+**Timeline:** 1 semana (~7 dias)  
+**Deploy:** https://protocolos-two.vercel.app
 
 ---
 
-## Stack
+## 🎯 Contexto do Projeto
 
-| Camada | Tecnologia |
-|--------|------------|
-| Framework | Next.js 14 (App Router) |
-| Linguagem | TypeScript |
-| Styling | Tailwind CSS |
-| Auth | NextAuth.js v5 (credentials + magic link) |
-| Database | **SQLite (dev) → Supabase Postgres (prod)** |
-| ORM | Prisma |
-| Storage | Local filesystem (dev) → Supabase Storage (prod) |
-| PDF Parsing | pdf-parse |
-| AI | Groq API (llama3) - BYOK |
-| Deploy | Vercel |
-
-### Database Strategy
-
-**Fase 1 (MVP Local):**
-- SQLite via Prisma (`file:./dev.db`)
-- PDFs salvos em `/public/uploads/`
-- Roda 100% local
-
-**Fase 2 (Produção):**
-- Migrar para Supabase Postgres (só muda connection string)
-- PDFs no Supabase Storage
-- Zero mudança no código
+**O que é:** App de acompanhamento de treino e dieta.  
+**Stack:** Next.js 14, Prisma, Supabase, Tailwind, NextAuth, Groq  
+**Estado atual:** 90% completo (23/34 issues fechadas)  
+**Falta:** CRUD completo, mobile responsivo, polish essencial
 
 ---
 
-## Database Schema
+## 📋 Issues a Implementar (Ordem de Prioridade)
 
+### FASE 1: UX Critical (Dia 1-2)
+
+#### Issue #27: Mobile Responsive (P1) 🔴 CRÍTICO
+**Por que:** App inutilizável no celular (maioria dos usuários)
+
+**O que fazer:**
+- [ ] Layout responsivo em todas as páginas
+- [ ] Testar em viewport 375px (iPhone SE) e 428px (iPhone 14 Pro Max)
+- [ ] Sidebar mobile (hamburger menu ou bottom nav)
+- [ ] Cards de treino/dieta responsivos
+- [ ] Forms responsivos (upload, check-in)
+- [ ] Dashboard responsivo (gráficos, calendário)
+
+**Acceptance Criteria:**
+- [ ] AC1: App funcional em mobile (touch, scroll, navigation)
+- [ ] AC2: Textos legíveis sem zoom
+- [ ] AC3: Botões clicáveis (min 44x44px)
+- [ ] AC4: Forms usáveis (inputs, selects)
+- [ ] AC5: Gráficos responsivos (recharts responsive)
+
+**Files afetados:**
+- `app/layout.tsx` (sidebar mobile)
+- `components/protocol/*` (cards)
+- `app/dashboard/page.tsx`
+- `app/protocol/page.tsx`
+
+---
+
+#### Issue #31: Melhorar Visualização (P1) 🔴 CRÍTICO
+**Por que:** UX atual é confusa, usuário se perde
+
+**O que fazer:**
+- [ ] Organizar treinos por dia da semana (A, B, C, etc)
+- [ ] Agrupar exercícios por grupo muscular
+- [ ] Melhorar layout de refeições (café, almoço, jantar, lanches)
+- [ ] Adicionar ícones pra facilitar escaneabilidade
+- [ ] Melhorar hierarquia visual (headings, espaçamento)
+- [ ] Breadcrumbs ou indicador de onde o usuário está
+
+**Acceptance Criteria:**
+- [ ] AC1: Treinos agrupados por dia (Treino A, B, C visível)
+- [ ] AC2: Exercícios agrupados por músculo (Peito, Costas, Pernas)
+- [ ] AC3: Refeições separadas (Café, Almoço, Jantar, Lanches)
+- [ ] AC4: Ícones ajudam a identificar tipo (💪 treino, 🍽️ dieta)
+- [ ] AC5: Navegação clara (usuário sabe onde está)
+
+**Files afetados:**
+- `components/protocol/WorkoutCard.tsx`
+- `components/protocol/DietCard.tsx`
+- `app/protocol/page.tsx`
+
+---
+
+### FASE 2: Core Features (Dia 3-5)
+
+#### Issue #29: CRUD para Treinos (P1) 🔴 CRÍTICO
+**Por que:** Usuário não consegue editar/deletar treinos
+
+**O que fazer:**
+- [ ] API: `PUT /api/protocol/workout/:id` (editar treino)
+- [ ] API: `DELETE /api/protocol/workout/:id` (deletar treino)
+- [ ] API: `POST /api/protocol/workout` (criar treino manual)
+- [ ] UI: Botão "Editar" em cada WorkoutCard
+- [ ] UI: Modal/Form de edição
+- [ ] UI: Botão "Deletar" com confirmação
+- [ ] UI: Botão "+ Adicionar Treino" (criar manual)
+
+**Acceptance Criteria:**
+- [ ] AC1: Editar nome do treino, exercícios, séries, reps
+- [ ] AC2: Deletar treino com confirmação ("Tem certeza?")
+- [ ] AC3: Criar treino manual (sem PDF)
+- [ ] AC4: Mudanças salvas no database
+- [ ] AC5: UI atualiza sem refresh (optimistic update)
+
+**Files afetados:**
+- `app/api/protocol/workout/[id]/route.ts` (novo)
+- `app/api/protocol/workout/route.ts` (novo, POST)
+- `components/protocol/WorkoutCard.tsx`
+- `components/protocol/EditWorkoutModal.tsx` (novo)
+
+**Database:**
 ```prisma
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  image         String?
-  apiKey        String?   // Groq API key (encrypted)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  protocols     Protocol[]
-  checkins      Checkin[]
-}
-
-model Protocol {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  name          String    // "Protocolo Janeiro 2026"
-  originalPdf   String    // URL do PDF no storage
-  
-  // Dados extraídos
-  workouts      Json      // Array de workouts estruturados
-  meals         Json      // Array de refeições estruturadas
-  notes         String?   // Observações gerais
-  
-  startDate     DateTime?
-  endDate       DateTime?
-  isActive      Boolean   @default(true)
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  checkins      Checkin[]
-}
-
-model Checkin {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  protocolId    String
-  protocol      Protocol  @relation(fields: [protocolId], references: [id], onDelete: Cascade)
-  
-  date          DateTime  @default(now())
-  
-  // Check-in data
-  trainedToday  Boolean
-  followedDiet  Boolean
-  workoutNotes  String?
-  dietNotes     String?
-  
-  // Opcional
-  weight        Float?
-  photos        String[]  // URLs das fotos
-  
-  // Mood/Energy (1-5)
-  energyLevel   Int?
-  
-  createdAt     DateTime  @default(now())
-  
-  @@unique([userId, protocolId, date])
+// Já existe:
+model Workout {
+  id          String   @id @default(uuid())
+  protocolId  String
+  name        String
+  exercises   Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 ```
 
 ---
 
-## Estrutura de Dados Extraídos
+#### Issue #30: CRUD para Dieta (P1) 🔴 CRÍTICO
+**Por que:** Usuário não consegue editar/deletar refeições
 
-### Workout (JSON)
+**O que fazer:**
+- [ ] API: `PUT /api/protocol/diet/:id` (editar refeição)
+- [ ] API: `DELETE /api/protocol/diet/:id` (deletar refeição)
+- [ ] API: `POST /api/protocol/diet` (criar refeição manual)
+- [ ] UI: Botão "Editar" em cada DietCard
+- [ ] UI: Modal/Form de edição
+- [ ] UI: Botão "Deletar" com confirmação
+- [ ] UI: Botão "+ Adicionar Refeição" (criar manual)
 
-```typescript
-interface Workout {
-  id: string;
-  name: string;           // "Treino A - Peito e Tríceps"
-  dayOfWeek?: string[];   // ["monday", "thursday"]
-  exercises: Exercise[];
-}
+**Acceptance Criteria:**
+- [ ] AC1: Editar nome da refeição, alimentos, quantidades
+- [ ] AC2: Deletar refeição com confirmação
+- [ ] AC3: Criar refeição manual (sem PDF)
+- [ ] AC4: Mudanças salvas no database
+- [ ] AC5: UI atualiza sem refresh
 
-interface Exercise {
-  id: string;
-  name: string;           // "Supino Reto"
-  sets: number;           // 4
-  reps: string;           // "8-12" ou "15"
-  rest: string;           // "60s"
-  notes?: string;         // "Foco na descida controlada"
-  weight?: string;        // "70kg" (se especificado)
-}
-```
+**Files afetados:**
+- `app/api/protocol/diet/[id]/route.ts` (novo)
+- `app/api/protocol/diet/route.ts` (novo, POST)
+- `components/protocol/DietCard.tsx`
+- `components/protocol/EditDietModal.tsx` (novo)
 
-### Meal Plan (JSON)
-
-```typescript
-interface MealPlan {
-  id: string;
-  totalCalories?: number;
-  totalProtein?: number;
-  meals: Meal[];
-}
-
-interface Meal {
-  id: string;
-  name: string;           // "Café da manhã"
-  time?: string;          // "07:00"
-  foods: Food[];
-}
-
-interface Food {
-  id: string;
-  name: string;           // "Ovos inteiros"
-  quantity: string;       // "3 unidades"
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
+**Database:**
+```prisma
+// Já existe:
+model Diet {
+  id          String   @id @default(uuid())
+  protocolId  String
+  mealName    String
+  foods       Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 ```
 
 ---
 
-## Páginas e Rotas
+#### Issue #23: CI/CD com GitHub Actions (P1) 🔴 CRÍTICO
+**Por que:** Deploy manual = risco de bug em prod
 
-```
-/                       Landing page
-/login                  Login (magic link)
-/app                    Dashboard principal (redirect se não logado)
-/app/protocol           Protocolo ativo (treino + dieta)
-/app/protocol/upload    Upload de novo PDF
-/app/checkin            Check-in do dia
-/app/history            Histórico de check-ins
-/app/progress           Gráficos de evolução
-/app/settings           Configurações (API key, perfil)
-```
+**O que fazer:**
+- [ ] Criar `.github/workflows/ci.yml`
+- [ ] Workflow: Lint (ESLint)
+- [ ] Workflow: Type check (TypeScript)
+- [ ] Workflow: Build (next build)
+- [ ] Workflow: Deploy preview em PRs
+- [ ] Workflow: Deploy prod no merge pra main
+- [ ] Branch protection (require CI pass)
 
----
+**Acceptance Criteria:**
+- [ ] AC1: CI roda em todo PR
+- [ ] AC2: Lint + Type check + Build passa
+- [ ] AC3: Preview deploy automático em PRs
+- [ ] AC4: Deploy prod automático no merge
+- [ ] AC5: CI falha se houver erro
 
-## User Flows
+**Files afetados:**
+- `.github/workflows/ci.yml` (novo)
+- `.github/workflows/deploy-preview.yml` (novo)
+- `.github/workflows/deploy-prod.yml` (novo)
 
-### Flow 1: Primeiro Acesso
-
-```
-[Landing] → [Login] → [Magic Link enviado] → [Clica no email]
-    → [Redirect /app] → [Sem protocolo] → [Prompt upload PDF]
-    → [Upload] → [Processando...] → [Preview do que foi extraído]
-    → [Confirma/Edita] → [Protocolo salvo] → [Dashboard]
-```
-
-**Estados:**
-- Loading: Spinner com "Analisando seu protocolo..."
-- Success: Preview dos dados extraídos com opção de editar
-- Error: "Não consegui extrair. Verifique se o PDF contém treino/dieta."
-- Empty: "PDF parece vazio ou é uma imagem. Tente outro arquivo."
-
-### Flow 2: Check-in Diário
-
-```
-[Dashboard] → [Botão "Check-in"] → [Modal/Page de check-in]
-    → [Treinou hoje? Y/N] → [Seguiu dieta? Y/N]
-    → [Notas opcionais] → [Peso opcional] → [Fotos opcionais]
-    → [Salvar] → [Animação de sucesso] → [Dashboard atualizado]
-```
-
-**Estados:**
-- Já fez check-in hoje: Mostra resumo, permite editar
-- Não fez: Mostra formulário
-- Streak: Mostra sequência de dias
-
-### Flow 3: Ver Progresso
-
-```
-[Dashboard] → [Aba Progress] → [Gráficos]
-    → Calendário de consistência (estilo GitHub)
-    → Gráfico de peso (se registrado)
-    → % de treinos completados
-    → % de dieta seguida
+**Exemplo CI:**
+```yaml
+name: CI
+on: [pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run lint
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run type-check
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run build
 ```
 
 ---
 
-## Componentes Principais
+### FASE 3: Polish Essencial (Dia 6-7)
 
-### Layout
-- `AppLayout` - Sidebar + Header + Content
-- `Sidebar` - Navegação (Protocol, Check-in, Progress, Settings)
-- `Header` - User menu, notificações
+#### Issue #25: Loading States e Skeletons (P2)
+**Por que:** Usuário não sabe se tá carregando
 
-### Protocol
-- `ProtocolUpload` - Drag & drop PDF
-- `ProtocolPreview` - Mostra dados extraídos, permite editar
-- `WorkoutCard` - Exibe um treino com exercícios
-- `MealCard` - Exibe uma refeição com alimentos
-- `ExerciseList` - Lista de exercícios de um treino
-- `FoodList` - Lista de alimentos de uma refeição
+**O que fazer:**
+- [ ] Loading skeleton pra protocol page
+- [ ] Loading skeleton pra dashboard
+- [ ] Loading spinner em forms (upload, check-in)
+- [ ] Loading state em botões (disable + spinner)
+- [ ] Usar `loading.tsx` do Next.js onde aplicável
 
-### Check-in
-- `CheckinForm` - Formulário de check-in
-- `CheckinSummary` - Resumo do check-in do dia
-- `StreakBadge` - Mostra sequência atual
+**Acceptance Criteria:**
+- [ ] AC1: Skeleton aparece enquanto carrega protocol
+- [ ] AC2: Skeleton aparece enquanto carrega dashboard
+- [ ] AC3: Botões mostram spinner durante submit
+- [ ] AC4: Forms desabilitam durante submit
+- [ ] AC5: Transições suaves (não pisca)
 
-### Progress
-- `ConsistencyCalendar` - Calendário estilo GitHub contributions
-- `WeightChart` - Gráfico de linha (peso ao longo do tempo)
-- `StatsCards` - Cards com % treino, % dieta, streak
-
-### Settings
-- `ApiKeyInput` - Input para Groq API key (masked)
-- `ProfileForm` - Nome, email, foto
+**Files afetados:**
+- `app/protocol/loading.tsx` (novo)
+- `app/dashboard/loading.tsx` (novo)
+- `components/ui/Skeleton.tsx` (novo)
+- `components/ui/Button.tsx` (adicionar loading state)
 
 ---
 
-## API Routes
+#### Issue #26: Error Handling Global (P2)
+**Por que:** Erros aparecem como texto bruto
+
+**O que fazer:**
+- [ ] Criar `app/error.tsx` (error boundary global)
+- [ ] Criar `components/ui/ErrorBoundary.tsx`
+- [ ] Toast/Alert pra erros de API
+- [ ] Página 404 customizada
+- [ ] Página 500 customizada
+- [ ] Error logging (console.error no mínimo)
+
+**Acceptance Criteria:**
+- [ ] AC1: Erros mostram UI amigável (não stack trace)
+- [ ] AC2: Erros de API mostram toast com mensagem clara
+- [ ] AC3: 404 mostra página customizada ("Página não encontrada")
+- [ ] AC4: 500 mostra página customizada ("Algo deu errado")
+- [ ] AC5: Erros logados no console (preparar pra Sentry)
+
+**Files afetados:**
+- `app/error.tsx` (novo)
+- `app/not-found.tsx` (novo)
+- `components/ui/ErrorBoundary.tsx` (novo)
+- `components/ui/Toast.tsx` (novo, ou usar shadcn/ui)
+- `lib/api-client.ts` (adicionar error handling)
+
+---
+
+#### Issue #28: SEO e Meta Tags (P2)
+**Por que:** Sem SEO = sem visibilidade
+
+**O que fazer:**
+- [ ] Metadata em `app/layout.tsx` (title, description, OG)
+- [ ] Metadata por página (protocol, dashboard, etc)
+- [ ] `robots.txt` (allow all)
+- [ ] `sitemap.xml` (páginas principais)
+- [ ] OG image (pode ser simples logo)
+- [ ] Favicon (se não tiver ainda)
+
+**Acceptance Criteria:**
+- [ ] AC1: Title tag descritivo em todas as páginas
+- [ ] AC2: Meta description em todas as páginas
+- [ ] AC3: OG tags (title, description, image)
+- [ ] AC4: robots.txt permite crawlers
+- [ ] AC5: sitemap.xml lista páginas principais
+
+**Files afetados:**
+- `app/layout.tsx` (metadata root)
+- `app/protocol/page.tsx` (metadata específica)
+- `app/dashboard/page.tsx` (metadata específica)
+- `public/robots.txt` (novo)
+- `app/sitemap.ts` (novo, Next.js 14)
+
+**Exemplo metadata:**
+```tsx
+export const metadata: Metadata = {
+  title: 'ProtocolOS - Seu Protocolo de Treino',
+  description: 'Acompanhe seu treino e dieta. Upload de PDF, check-in diário, gráficos de evolução.',
+  openGraph: {
+    title: 'ProtocolOS',
+    description: 'Acompanhe seu protocolo de treino e dieta',
+    images: ['/og-image.png'],
+  },
+}
+```
+
+---
+
+## 🏗️ Stack e Convenções
+
+### Stack Atual
+- **Framework:** Next.js 14 (App Router)
+- **Styling:** Tailwind CSS
+- **Database:** Supabase (Postgres) via Prisma
+- **Auth:** NextAuth.js (email magic link)
+- **AI:** Groq (BYOK)
+- **Deploy:** Vercel
+
+### Convenções
+- **Commits:** Português, conventional commits (`feat:`, `fix:`, etc)
+- **Co-Author:** Sempre incluir `Co-authored-by: Claude <noreply@anthropic.com>`
+- **Refs:** Incluir `Refs: #123` nos commits
+- **TypeScript:** Strict mode, zero erros
+- **Testes:** Por enquanto, foco em funcionalidade (testes depois)
+
+---
+
+## 🚨 Constraints e Cuidados
+
+### Vercel Serverless
+- ✅ Usar `unpdf` (já funciona, NÃO mudar)
+- ❌ Não usar `pdf-parse` (quebra no serverless)
+- ✅ Timeouts: 10s (Hobby), 60s (Pro)
+
+### Database
+- ✅ Prisma Client já configurado
+- ✅ Schema já tem Workout e Diet models
+- ❌ NÃO fazer migrations manuais (usar `prisma migrate dev`)
 
 ### Auth
-- `POST /api/auth/magic-link` - Envia magic link
-- `GET /api/auth/verify` - Verifica token do magic link
+- ✅ NextAuth já configurado (magic link via Resend)
+- ✅ Session funciona
+- ❌ Por enquanto, usuário padrão (sem multi-tenant)
 
-### Protocol
-- `POST /api/protocol/upload` - Upload PDF + processa
-- `GET /api/protocol/active` - Retorna protocolo ativo
-- `PUT /api/protocol/:id` - Atualiza protocolo (edições manuais)
-- `DELETE /api/protocol/:id` - Arquiva protocolo
-
-### Check-in
-- `POST /api/checkin` - Cria check-in
-- `GET /api/checkin/today` - Check-in de hoje
-- `GET /api/checkin/history` - Histórico paginado
-- `PUT /api/checkin/:id` - Edita check-in
-
-### Stats
-- `GET /api/stats/consistency` - Dados para calendário
-- `GET /api/stats/summary` - % treino, % dieta, streak
+### Responsivo
+- ✅ Mobile-first (min 375px)
+- ✅ Breakpoints Tailwind: sm (640), md (768), lg (1024), xl (1280)
+- ✅ Touch-friendly (botões 44x44px)
 
 ---
 
-## PDF Parsing Flow
+## 📦 Ordem de Implementação
 
-```typescript
-async function parseProtocolPdf(file: File, apiKey: string): Promise<ParsedProtocol> {
-  // 1. Extrair texto do PDF
-  const pdfBuffer = await file.arrayBuffer();
-  const pdfData = await pdfParse(Buffer.from(pdfBuffer));
-  const rawText = pdfData.text;
-  
-  // 2. Se texto muito curto, provavelmente é imagem
-  if (rawText.length < 100) {
-    throw new Error('PDF_IS_IMAGE');
-  }
-  
-  // 3. Tentar REGEX primeiro (padrões comuns)
-  const regexResult = tryRegexExtraction(rawText);
-  if (regexResult.confidence > 0.8) {
-    return regexResult.data;
-  }
-  
-  // 4. Fallback para AI
-  const groq = new Groq({ apiKey });
-  const completion = await groq.chat.completions.create({
-    model: 'llama3-70b-8192',
-    messages: [
-      {
-        role: 'system',
-        content: EXTRACTION_PROMPT,
-      },
-      {
-        role: 'user',
-        content: rawText,
-      },
-    ],
-    response_format: { type: 'json_object' },
-  });
-  
-  // 5. Validar e retornar
-  const parsed = JSON.parse(completion.choices[0].message.content);
-  return validateAndClean(parsed);
-}
-```
+**Dia 1:**
+1. #27 Mobile Responsive (layout, sidebar, forms)
 
-### Extraction Prompt
+**Dia 2:**
+2. #31 Melhorar Visualização (agrupar, ícones, hierarquia)
 
-```
-Você é um assistente que extrai informações de protocolos de treino e dieta.
+**Dia 3:**
+3. #29 CRUD Treinos (API + UI)
 
-Dado o texto de um PDF, extraia:
-1. Treinos (nome, exercícios com séries, repetições, descanso)
-2. Dieta (refeições com alimentos e quantidades)
-3. Observações gerais
+**Dia 4:**
+4. #30 CRUD Dieta (API + UI)
 
-Retorne um JSON com a estrutura:
-{
-  "workouts": [...],
-  "meals": [...],
-  "notes": "..."
-}
+**Dia 5:**
+5. #23 CI/CD (GitHub Actions)
 
-Se alguma informação não estiver presente, retorne array vazio ou null.
-Seja preciso com números (séries, reps, quantidades).
-Mantenha os nomes dos exercícios e alimentos em português.
+**Dia 6:**
+6. #25 Loading States
+7. #26 Error Handling
+
+**Dia 7:**
+8. #28 SEO
+
+**Commits atômicos:** Cada issue = múltiplos commits pequenos, não um commit gigante.
+
+---
+
+## ✅ Definition of Done (DoD)
+
+Para cada issue:
+- [ ] Código implementado e funcional
+- [ ] TypeScript sem erros (`npm run type-check`)
+- [ ] Lint passa (`npm run lint`)
+- [ ] Build passa (`npm run build`)
+- [ ] Testado manualmente (localhost)
+- [ ] Testado em mobile (responsive)
+- [ ] Commit com mensagem semântica + Refs
+- [ ] Pushed pra branch
+
+---
+
+## 🚀 Comandos Úteis
+
+```bash
+# Dev
+npm run dev
+
+# Build
+npm run build
+
+# Lint
+npm run lint
+
+# Type check
+npm run type-check
+
+# Prisma
+npx prisma migrate dev
+npx prisma studio
 ```
 
 ---
 
-## Design System
+## 📞 Dúvidas e Decisões
 
-### Cores
-- Primary: Purple (#8B5CF6)
-- Secondary: Pink (#EC4899)
-- Success: Green (#10B981)
-- Warning: Yellow (#F59E0B)
-- Error: Red (#EF4444)
-- Background: Dark (#0A0A0F)
-- Surface: (#13131A)
-- Border: (#1F1F2E)
+Se encontrar ambiguidade:
+1. **Priorize UX** — Se em dúvida, escolha o que é melhor pro usuário
+2. **Simplicidade** — Não over-engineer, foco em funcionalidade
+3. **Mobile-first** — Sempre testar no mobile primeiro
 
-### Componentes Base
-- Seguir padrão do autonomousclara-ds
-- Cards com glassmorphism sutil
-- Botões com gradiente purple-pink
-- Inputs com borda sutil, foco em purple
+Se encontrar bloqueio técnico:
+1. **Documente** — Adicione TODO ou FIXME com contexto
+2. **Continue** — Não trave, implemente o que é possível
+3. **Avise** — Mencione no commit ou crie issue
 
 ---
 
-## Critérios de Aceite
-
-### Funcionais
-1. [ ] Usuário consegue criar conta com magic link
-2. [ ] Usuário consegue fazer upload de PDF
-3. [ ] Sistema extrai treino e dieta do PDF com >80% precisão
-4. [ ] Usuário consegue editar dados extraídos
-5. [ ] Usuário consegue fazer check-in diário
-6. [ ] Sistema mostra streak de dias consecutivos
-7. [ ] Usuário vê calendário de consistência
-8. [ ] Usuário vê % de treinos e dieta cumpridos
-9. [ ] Usuário consegue configurar API key
-10. [ ] Sistema funciona sem API key (modo limitado?)
-
-### Não-Funcionais
-11. [ ] Tempo de parsing PDF < 30s
-12. [ ] Lighthouse Performance >= 80
-13. [ ] Lighthouse Accessibility >= 90
-14. [ ] Mobile responsive
-15. [ ] Funciona offline (PWA - check-in local)
-
-### Segurança
-16. [ ] API key armazenada criptografada
-17. [ ] PDFs só acessíveis pelo dono
-18. [ ] Rate limiting em uploads
-19. [ ] Validação de tipo de arquivo (só PDF)
-
----
-
-## Testes Necessários
-
-### Unit
-- `parseProtocolPdf` - diferentes formatos de PDF
-- `tryRegexExtraction` - padrões conhecidos
-- `validateAndClean` - sanitização de dados
-
-### Integration
-- Upload PDF → dados corretos no banco
-- Check-in → atualiza stats
-- Magic link → cria sessão
-
-### E2E
-- Fluxo completo: signup → upload → checkin → ver stats
-
----
-
-## Não Fazer (Fora do Escopo MVP)
-
-- ❌ App mobile nativo
-- ❌ MediaPipe análise de vídeo
-- ❌ Multi-idioma
-- ❌ Dashboard do treinador
-- ❌ Compartilhamento social
-- ❌ Integração com wearables
-- ❌ Planos pagos / billing
-
----
-
-## Ordem de Implementação
-
-1. **Setup** - Next.js, Tailwind, Prisma, Supabase
-2. **Auth** - NextAuth com magic link
-3. **Upload** - Componente + storage
-4. **Parsing** - pdf-parse + Groq
-5. **Protocol View** - Exibir treino/dieta extraídos
-6. **Check-in** - Formulário + persistência
-7. **Progress** - Calendário + stats
-8. **Settings** - API key + perfil
-9. **Polish** - Loading states, errors, mobile
-10. **Deploy** - Vercel + domínio
-
----
-
-## Referências
-
-- [pdf-parse](https://www.npmjs.com/package/pdf-parse)
-- [Groq SDK](https://github.com/groq/groq-typescript)
-- [NextAuth.js v5](https://authjs.dev/)
-- [Supabase](https://supabase.com/docs)
-- [Prisma](https://www.prisma.io/docs)
-
----
-
-*Spec criada em: 2026-02-02 23:15*
-*Autor: Clara*
-*Status: Pronto para implementação*
+**Vamos lá! 🚀**
