@@ -1,3 +1,4 @@
+import { extractText } from 'unpdf';
 import Groq from 'groq-sdk';
 
 export interface Exercise {
@@ -98,13 +99,11 @@ export async function parseProtocolPdf(
   buffer: Buffer,
   apiKey?: string
 ): Promise<ParsedProtocol> {
-  // 1. Extrair texto do PDF
+  // 1. Extrair texto do PDF usando unpdf (funciona em serverless)
   let rawText = '';
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pdfParse = require('pdf-parse');
-    const pdfData = await pdfParse(buffer);
-    rawText = pdfData.text;
+    const { text } = await extractText(buffer, { mergePages: true });
+    rawText = text;
   } catch (err: any) {
     console.error('PDF parse error:', err);
     throw new Error('Erro ao ler PDF: ' + err.message);
