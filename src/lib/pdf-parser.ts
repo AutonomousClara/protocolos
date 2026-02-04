@@ -98,10 +98,11 @@ export async function parseProtocolPdf(
   buffer: Buffer,
   apiKey?: string
 ): Promise<ParsedProtocol> {
-  // 1. Extrair texto do PDF usando dynamic import
+  // 1. Extrair texto do PDF
   let rawText = '';
   try {
-    const pdfParse = (await import('pdf-parse')).default;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const pdfParse = require('pdf-parse');
     const pdfData = await pdfParse(buffer);
     rawText = pdfData.text;
   } catch (err: any) {
