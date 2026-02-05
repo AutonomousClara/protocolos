@@ -76,8 +76,45 @@ npm run dev          # Servidor de desenvolvimento
 npm run build        # Build para produção
 npm run start        # Inicia servidor de produção
 npm run lint         # Lint do código
+npm test             # Rodar testes
+npm run test:watch   # Rodar testes em watch mode
+npm run test:coverage # Gerar relatório de cobertura
 npx prisma studio    # Abrir Prisma Studio (GUI do banco)
 ```
+
+## Testes
+
+O projeto utiliza Jest e React Testing Library para testes automatizados.
+
+### Estrutura de Testes
+
+```
+tests/
+├── unit/           # Testes unitários de componentes e funções
+├── integration/    # Testes de integração de fluxos
+└── e2e/           # Testes end-to-end com Playwright
+```
+
+### Rodando Testes
+
+```bash
+# Rodar todos os testes
+npm test
+
+# Rodar testes em modo watch (útil durante desenvolvimento)
+npm run test:watch
+
+# Gerar relatório de cobertura
+npm run test:coverage
+```
+
+### Cobertura de Testes
+
+Mantemos cobertura mínima de 80% em:
+- Componentes críticos (autenticação, upload, check-in)
+- Lógica de parsing de PDF
+- API routes
+- Validações de formulário
 
 ## Próximos Passos
 
